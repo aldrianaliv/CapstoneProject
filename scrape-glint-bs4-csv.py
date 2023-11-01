@@ -29,16 +29,19 @@ while page_number < 20:
         location = soup.find_all('span', class_='CardJobLocation__StyledTruncatedLocation-sc-1by41tq-1 kEinQH')
         
         # Extract work type and experience values
-        work_type_elements = soup.find_all('div', class_='TagStyle-sc-r1wv7a-4 bJWZOt CompactOpportunityCardTags__Tag-sc-610p59-1 hncMah')
+        study_req_elements = soup.find_all('div', class_='TagStyle-sc-r1wv7a-4 bJWZOt CompactOpportunityCardTags__Tag-sc-610p59-1 hncMah')
         
-        work_type_list = []
+        study_req_list = []
         experience_list = []
+        work_type_list=[]
 
-        for element in work_type_elements:
+        for element in study_req_elements:
             text = element.text
             if any(keyword in text.lower() for keyword in ["setahun", "tahun"]):  # Assuming this text is for "experience"
                 experience_list.append(text)
             elif "Minimal" in text:  # Assuming this text is for "min study"
+                study_req_list.append(text)
+            elif any(keyword in text.lower() for keyword in ["harian",'magang','penuh waktu','paruh waktu','kontrak']):
                 work_type_list.append(text)
 
         salary = soup.find_all('span', class_='CompactOpportunityCardsc__SalaryWrapper-sc-dkg8my-29 gfPeyg')
@@ -50,6 +53,7 @@ while page_number < 20:
                 "Company": company[i].text if i < len(company) else "N/A",
                 "Location": location[i].text if i < len(location) else "N/A",
                 "Work Type": work_type_list[i] if i < len(work_type_list) else "N/A",
+                "Study Requirement": study_req_list[i] if i < len(study_req_list) else "N/A",
                 "Experience": experience_list[i] if i < len(experience_list) else "N/A",
                 "Salary": salary[i].text if i < len(salary) else "N/A",
                 "Link": "https://glints.com" + links[i]["href"] if i < len(links) else "N/A"
@@ -67,7 +71,7 @@ while page_number < 20:
 
 # Save job listings to a CSV file
 with open('job_listings.csv', 'w', newline='', encoding='utf-8') as csv_file:
-    fieldnames = ["Job Title", "Company", "Location", "Work Type", "Experience", "Salary", "Link"]
+    fieldnames = ["Job Title", "Company", "Location","Work Type", "Study Requirement", "Experience", "Salary", "Link"]
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     
     # Write the header row
