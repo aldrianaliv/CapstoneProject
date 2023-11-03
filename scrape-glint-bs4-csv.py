@@ -12,7 +12,7 @@ headers = {
     "Referer": "https://glints.com/",
 }
 
-while page_number < 20:
+while page_number < 2:
     # Send an HTTP GET request to the URL with headers
     response = requests.get(url, headers=headers)
 
