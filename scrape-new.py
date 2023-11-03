@@ -140,4 +140,4 @@ with open('job_list.csv', 'w', newline='', encoding='utf-8') as csv_file:
         job_listing["Skill"] = ", ".join(skill_list)  # Update "Skill" field with all skill information
         writer.writerow(job_listing)
 
-print("Job listings have been saved to job_listings.csv")
+print("Job listings have been saved to job_list.csv")
