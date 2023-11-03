@@ -128,7 +128,7 @@ for job_listing in all_job_listings:
     job_listing["Job Requirements"] = job_requirements
 
 # Save job listings to a CSV file
-with open('job_listings.csv', 'w', newline='', encoding='utf-8') as csv_file:
+with open('job_list.csv', 'w', newline='', encoding='utf-8') as csv_file:
     fieldnames = ["Job Title", "Company", "Location", "Work Type", "Study Requirement", "Experience", "Skill", "Salary", "Job Description", "Job Requirements", "Link"]
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
