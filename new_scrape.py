@@ -42,20 +42,6 @@ while page_number < 2 :
         job_details['Location'] = job_location
         job_details['Salary'] = salary_info
 
-        # Find all elements with the specified class
-        information_elements = job_soup.find_all('div', class_='TopFoldsc__JobOverViewInfo-sc-1fbktg5-9 iqoKuL')
-
-        # Initialize an empty list to store the scraped data
-        information_list = []
-
-        # Iterate over the found elements
-        for element in information_elements:
-            information_list.append(element.text.strip())
-
-        # Join the data with a comma separator
-        joined_information = ', '.join(information_list)
-        job_details['Information'] = joined_information
-
         # Find the parent div element containing the skills
         skills_div = job_soup.find('div', class_='Skillssc__TagContainer-sc-1h7ic4i-5 jqLfdz')
         # Initialize a list to store the extracted skills
