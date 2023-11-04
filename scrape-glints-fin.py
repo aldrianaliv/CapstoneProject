@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import csv
 
 # Initialize base URL and page number
-base_url = "https://glints.com/id/lowongan-kerja"
+base_url = "https://glints.com/id/opportunities/jobs/explore?country=ID&locationName=All+Cities%2FProvinces&sortBy=LATEST"
 page_number = 1
 
 job_data = []
@@ -12,10 +12,9 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
     "Referer": "https://glints.com/",
 }
-
-while page_number < 5:
+while page_number < 100:
     # Create the URL with the current page number
-    url = f"{base_url}?page={page_number}"
+    url = f"{base_url}&page={page_number}"
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -23,7 +22,7 @@ while page_number < 5:
     job_cards = soup.find_all('div', class_="JobCardsc__JobcardContainer-sc-hmqj50-0 iirqVR CompactOpportunityCardsc__CompactJobCardWrapper-sc-dkg8my-2 bMyejJ compact_job_card")
     if not job_cards:
         print(f"No job listings found on page {page_number}. Exiting.")
-        break  # No more pages to scrape
+        continue  # No more pages to scrape
 
     for card in job_cards:
         job_link = "https://glints.com" + card.find('a').get("href")
@@ -81,12 +80,12 @@ while page_number < 5:
     page_number += 1
 
 if job_data:
-    with open('newjobs.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    with open('job-list-all.csv', 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = job_data[0].keys()
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for job in job_data:
             writer.writerow(job)
-    print("Data has been scraped and saved to job.csv")
+    print("Data has been scraped and saved to job-list-all.csv")
 else:
     print("No job data found to save.")
