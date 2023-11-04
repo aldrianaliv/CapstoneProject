@@ -36,27 +36,24 @@ while page_number < 5:
         job_title_element = job_soup.find('h1', class_='z1s6m00 _1hbhsw64y y44q7i0 y44q7il _1d0g9qk4 y44q7is y44q7i21')
         job_title = job_title_element.text if job_title_element else "Job Title not found"
         
-        elements = job_soup.find_all('span', class_='z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 y44q7ii')
-        if elements:
-            for element in elements:
-                text = element.text
-                if 'IDR' in text.lower():  # Assuming this text is for "experience"
-                    job_details['Salary'] = text
-                elif not any(keyword in text.lower() for keyword in ['English']):
-                    job_details['Location'] = text
-
-
-        job_location_element = job_soup.find('span', class_="z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 y44q7ii")
-        job_location = job_location_element.text if job_location_element else "Location not found"
-        salary_info_element = job_soup.find('span', class_='z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 y44q7ii')
-        salary_info = salary_info_element.text.strip() if salary_info_element else "Perusahaan tidak menampilkan gaji"
-        
         job_details['Company'] = company_name
         job_details['Job_title'] = job_title
-        job_details['Location'] = job_location
-        job_details['Salary'] = salary_info
-        job_details['Links'] = job_link
 
+        # Assuming 'job_soup' contains the parsed HTML
+
+        # Extract salary information
+        salary_elements = job_soup.find_all('span', class_='z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 y44q7ii')
+        salaries = [element.get_text(separator=' ').strip() for element in salary_elements if 'IDR' in element.get_text()]
+
+        job_details['Salary'] = salaries[0] if salaries else "No salary information found"
+
+        # Assuming 'job_soup' contains the parsed HTML
+        location_element = job_soup.select_one('.z1s6m00._1hbhsw65a._1hbhsw65e._1hbhsw6ga.kt8mbq0 span.z1s6m00._1hbhsw64y.y44q7i0.y44q7i1.y44q7i21.y44q7ii')
+        if location_element:
+            location = location_element.text
+
+        job_details['Location'] = location 
+        job_details['Links'] = job_link
         job_data.append(job_details)
 
     page_number += 1
