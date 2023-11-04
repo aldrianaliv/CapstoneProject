@@ -45,14 +45,16 @@ while page_number < 5:
         salary_elements = job_soup.find_all('span', class_='z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 y44q7ii')
         salaries = [element.get_text(separator=' ').strip() for element in salary_elements if 'IDR' in element.get_text()]
 
-        job_details['Salary'] = salaries[0] if salaries else "No salary information found"
-
         # Assuming 'job_soup' contains the parsed HTML
         location_element = job_soup.select_one('.z1s6m00._1hbhsw65a._1hbhsw65e._1hbhsw6ga.kt8mbq0 span.z1s6m00._1hbhsw64y.y44q7i0.y44q7i1.y44q7i21.y44q7ii')
         if location_element:
             location = location_element.text
 
         job_details['Location'] = location 
+        job_details['Salary'] = salaries[0] if salaries else "No salary information found"
+        job_details['Work Type']
+        job_details['Skill']
+        job_details['Description']
         job_details['Links'] = job_link
         job_data.append(job_details)
 

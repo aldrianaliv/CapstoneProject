@@ -64,14 +64,14 @@ while page_number < 100:
         else:
             skills_text = ""
         # Add the skills information to the job_details dictionary
-        job_details['Skill'] = skills_text
+        job_details['Skills'] = skills_text
 
 
         job_desc_div = job_soup.find('ul', class_="public-DraftStyleDefault-ul")
         if job_desc_div:
-            job_details['Job_Desc'] = ', '.join([li.text.strip() for li in job_desc_div.find_all('li')])
+            job_details['Descriptions'] = ', '.join([li.text.strip() for li in job_desc_div.find_all('li')])
         else:
-            job_details['Job_Desc'] = ''
+            job_details['Descriptions'] = ''
 
         job_details['Links'] = job_link
 
