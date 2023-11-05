@@ -42,8 +42,41 @@ async def fetch_job_data(url, session):
                 location_element = job_soup.select_one('.z1s6m00._1hbhsw65a._1hbhsw65e._1hbhsw6ga.kt8mbq0 span.z1s6m00._1hbhsw64y.y44q7i0.y44q7i1.y44q7i21.y44q7ii')
                 location = location_element.text if location_element else ""
 
+                #Extract Job Type information
+                job_type_elements = job_soup.find_all('span', class_= 'z1s6m00 _1hbhsw64y y44q7i0 y44q7i1 y44q7i21 _1d0g9qk4 y44q7ia')
+                # Initialize an empty list to store job types
+                job_types = []
+
+                # List of keywords to check for in lowercase
+                keywords_to_check = ['penuh', 'paruh', 'kontrak', 'magang', 'temporer']
+
+                for element in job_type_elements:
+                    text = element.text.lower()  # Convert to lowercase for case-insensitive comparison
+                    for keyword in keywords_to_check:
+                        if keyword in text:
+                            job_types.append(element.text)
+
+                # Join the identified job types with a comma or any desired separator
+                job_type = ", ".join(job_types) if job_types else " "
+    
+                #Extract Job Description
+                # Find the div element with data-automation="jobDescription"
+                job_description_div = job_soup.find('div', {'data-automation': 'jobDescription'})
+
+                # Initialize a variable to store the scraped text
+                scraped_text = ""
+
+                # Check if job_description_div is found before extracting text
+                if job_description_div:
+                    # Extract text from p and strong elements within job_description_div
+                    for element in job_description_div.find_all(['p', 'strong', 'ul', 'li', 'ol']):
+                        text = element.get_text(strip=True)
+                        scraped_text += text + ', '  # Append text with a newline
+
                 job_details['Location'] = location
                 job_details['Salary'] = salaries[0] if salaries else ""
+                job_details['Work Type'] = job_type
+                job_details['Descriptions'] = scraped_text
                 job_details['Links'] = job_link
                 job_data.append(job_details)
 
@@ -51,7 +84,7 @@ async def main():
     page_number = 1
     async with aiohttp.ClientSession() as session:
         tasks = []
-        while page_number < 60:
+        while page_number < 2:
             url = f"{base_url}?pg={page_number}"
             tasks.append(fetch_job_data(url, session))
             page_number += 1
