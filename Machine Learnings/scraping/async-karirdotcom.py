@@ -47,6 +47,7 @@ async def scrape_page(url, headers, job_data, page_number):
             job_details['Category'] = category
             job_details['Location'] = job_location
             job_details['Salary'] = salary
+            job_details['Experience'] = job_soup.find('li', class_="job--experience").get_text()
 
             footer_elements = job_soup.find_all('footer', class_="b-stat__footer")
 
