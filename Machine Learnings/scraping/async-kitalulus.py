@@ -58,11 +58,23 @@ async def scrape_page(job_data, soup, headers):
             job_details = {}
             
             job_id_counter += 1
-            job_details['id'] = f"kt{job_id_counter}"  # Assign the generated job ID          
-
+            job_details['id'] = f"kt{job_id_counter}"  # Assign the generated job ID
+            
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
             job_details['Location'] = job_location
+            
+            workt_type_card = job_soup.find('div', class_="VacancyTitleAndInfoStyled__BoxInfo-sc-1rqk80v-6 iKmXIN")
+            workt_type_div = workt_type_card.find_all('p', class_="TextStyled__Text-sc-18vo2dc-0 ceCju")
+            work_type_string = workt_type_div[1].get_text()
+            split_strings = work_type_string.split(" • ")
+            job_details['Work_type'] = split_strings[0]
+            job_details['Working_type'] = split_strings[1]           
+            
+            exp_card = job_soup.find_all('div', class_="VacancyRequirementStyled__Items-sc-1xx03pf-1 vqqtD")
+            exp_div = exp_card[3].find_all('p', class_="TextStyled__Text-sc-18vo2dc-0 ceCju")
+            job_details['Experience'] = exp_div[1].get_text()
+            
             job_details['Salary'] = salary
 
             skills_box = job_soup.find_all('span', class_="TagStyled__TagContainer-j4aip1-0 dPleZn")
