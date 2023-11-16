@@ -94,12 +94,12 @@ if __name__ == '__main__':
     asyncio.run(main())
 
     if job_data:
-        with open('job-list-jobstreet.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        with open('jobstreet-data.csv', 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = job_data[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for job in job_data:
                 writer.writerow(job)
-        print("Data has been scraped and saved to job-list-jobstreet.csv")
+        print("Data has been scraped and saved to jobstreet-data.csv")
     else:
         print("No job data found to save.")

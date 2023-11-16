@@ -21,7 +21,7 @@ async def fetch_job_data(url, session):
         for job_card in job_cards:
             links = job_card.find_all('a', href=True)
             for link in links:
-                href_value = link.get('href')[1]
+                href_value = link.get('href')
                 job_link = href_value
                 job_details = {'Links': job_link}
 

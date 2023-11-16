@@ -12,22 +12,24 @@ async def scrape_page(url, headers, job_data, page_number):
         response_text = await fetch_data(session, url, headers)
         soup = BeautifulSoup(response_text, 'html.parser')
 
-        job_cards = soup.find_all('div', class_="JobCardsc__JobcardContainer-sc-hmqj50-0 iirqVR CompactOpportunityCardsc__CompactJobCardWrapper-sc-dkg8my-2 bMyejJ compact_job_card")
+        job_cards = soup.find_all('div', class_="k-font-dm-sans k-rounded-lg k-bg-white k-border-solid k-border hover:k-border-2 hover:k-border-primary-color k-border k-group k-flex k-flex-col k-justify-between css-1otdiuc")
         if not job_cards:
             print(f"No job listings found on page {page_number}. Exiting.")
             return
 
         for card in job_cards:
-            job_link = "https://glints.com" + card.find('a').get("href")
-            company_name = card.find('a', class_='CompactOpportunityCardsc__CompanyLink-sc-dkg8my-10 iTRLWx').text.strip()
-            job_title = card.find('h3', class_='CompactOpportunityCardsc__JobTitle-sc-dkg8my-9 hgMGcy').text.strip()
-            job_location = card.find('div', class_="CompactOpportunityCardsc__OpportunityInfo-sc-dkg8my-16 krJQkc").text.strip()
-            salary_info_element = card.find('span', class_='CompactOpportunityCardsc__SalaryWrapper-sc-dkg8my-29 gfPeyg')
-            salary_info = salary_info_element.text.strip() if salary_info_element else "Perusahaan tidak menampilkan gaji"
-
+            job_link = "https://kalibrr.com" + card.find('a').get("href")
+            
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'html.parser')
             job_details = {}
+
+
+            company_name = job_soup.find('h2', class_='k-inline-block').text.strip()
+            job_title = job_soup.find('h1', class_='k-text-title k-inline-flex k-items-center md:k-text-primary-head md:k-flex lg:k-mt-16').text.strip()
+            job_location = card.find('div', class_="CompactOpportunityCardsc__OpportunityInfo-sc-dkg8my-16 krJQkc").text.strip()
+            salary_info_element = card.find('span', class_='CompactOpportunityCardsc__SalaryWrapper-sc-dkg8my-29 gfPeyg')
+            salary_info = salary_info_element.text.strip() if salary_info_element else "Perusahaan tidak menampilkan gaji"
 
             job_details['Company'] = company_name
             job_details['Job_title'] = job_title
@@ -65,12 +67,11 @@ async def scrape_page(url, headers, job_data, page_number):
             job_data.append(job_details)
 
 async def main():
-    base_url = "https://glints.com/id/opportunities/jobs/explore?country=ID&locationName=All+Cities%2FProvinces&sortBy=LATEST"
-    page_number = 1
+    base_url = "https://www.kalibrr.com/id-ID/home/all-jobs"
     job_data = []
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-        "Referer": "https://glints.com/",
+        "Referer": "https://www.kalibrr.com/",
     }
     
     while page_number < 5:
