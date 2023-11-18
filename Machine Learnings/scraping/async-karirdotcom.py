@@ -18,7 +18,7 @@ async def scrape_page(url, headers, job_data, page_number):
     async with aiohttp.ClientSession() as session:
         global job_id_counter
         response_text = await fetch_data(session, url, headers)
-        soup = BeautifulSoup(response_text, 'html.parser')
+        soup = BeautifulSoup(response_text, 'lxml')
 
         job_cards = soup.find_all('div', class_="row opportunity-box")
         if not job_cards:
@@ -34,7 +34,7 @@ async def scrape_page(url, headers, job_data, page_number):
 
             # mulai dr sini masuk ke link satu persatu
             job_response_text = await fetch_data(session, job_link, headers)
-            job_soup = BeautifulSoup(job_response_text, 'html.parser')
+            job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
 
             job_details['id'] = f"kr{job_id_counter}"  # Assign the generated job ID
