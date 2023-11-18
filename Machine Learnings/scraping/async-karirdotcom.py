@@ -1,4 +1,4 @@
-# Kontrol page number untuk menentukan berapa banyak data yang diambil
+# Control the page number to determine how much data is retrieved
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
@@ -32,7 +32,7 @@ async def scrape_page(url, headers, job_data, page_number):
             job_location = card.find('span', class_="tdd-location").text.strip()
             category = card.find('span', class_='tdd-company').text.strip()
 
-            # mulai dr sini masuk ke link satu persatu
+            # From here, proceed to visit the links one by one
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
@@ -47,15 +47,15 @@ async def scrape_page(url, headers, job_data, page_number):
             job_details['Work_type'] = "Tidak ditampilkan"
             job_details['Working_type'] = "Tidak ditampilkan"
             salary_raw = job_soup.find('span', class_='salary').text
-        	job_details['Salary'] = salary_raw.replace('IDR', 'Rp')
+        	job_details['Salary'] = job_details['Salary'] = "Tidak ditampilkan" if salary_raw == "Gaji Kompetitif" else salary_raw.replace('IDR', 'Rp')
         	
         	experience_text = job_soup.find('li', class_="job--experience").text
-        	job_details['Experience'] = "Tanpa pengalaman" if experience_text == "Setidaknya 0 tahun" else experience_text
+        	job_details['Experience'] = "Tanpa pengalaman" if experience_text == "Setidaknya 0 tahun" else experience_text.replace("Setidaknya", "Minimal")
 
             footer_elements = job_soup.find_all('footer', class_="b-stat__footer")
 
             job_details['Skills'] = footer_elements[0].text.strip()
-            job_details['Study_Requirement'] = footer_elements[4].text.strip()
+            job_details['Study_requirement'] = "Semua jenjang" if footer_elements[4].text.strip() == "Apa Saja" else footer_elements[4].text.strip()
 
             # Check if the element is found before calling get_text()
             description_card = job_soup.find_all('div', class_="b-matte")
@@ -84,13 +84,13 @@ async def main():
         page_number += 1
 
     if job_data:
-        with open('async_karirdotcom.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        with open('karirdotcom-data.csv', 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = job_data[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for job in job_data:
                 writer.writerow(job)
-        print("Data has been scraped and saved to async_karirdotcom.csv")
+        print("Data has been scraped and saved to karirdotcom-data.csv")
     else:
         print("No job data found to save.")
 
