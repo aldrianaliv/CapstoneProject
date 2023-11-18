@@ -1,12 +1,11 @@
+# Kontrol page number untuk menentukan berapa banyak data yang diambil
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
-import re
 import csv
 import nest_asyncio
 
 nest_asyncio.apply()
-pattern_salary = re.compile(r'.*(.0.1.4.2.1.1)')
 
 # Global variable to maintain the job ID counter
 job_id_counter = 0
@@ -31,7 +30,6 @@ async def scrape_page(url, headers, job_data, page_number):
             company_name = card.find('div', class_='tdd-company-name h8 --semi-bold').text.strip()
             job_title = card.find('h4', class_='tdd-function-name --semi-bold --inherit').text.strip()
             job_location = card.find('span', class_="tdd-location").text.strip()
-            salary = card.find('span', {'data-reactid': pattern_salary}).text.strip()
             category = card.find('span', class_='tdd-company').text.strip()
 
             # mulai dr sini masuk ke link satu persatu
@@ -39,20 +37,25 @@ async def scrape_page(url, headers, job_data, page_number):
             job_soup = BeautifulSoup(job_response_text, 'html.parser')
             job_details = {}
 
-            job_id_counter += 1
             job_details['id'] = f"kr{job_id_counter}"  # Assign the generated job ID
-            
+            job_id_counter += 1
+                        
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
             job_details['Category'] = category
             job_details['Location'] = job_location
-            job_details['Salary'] = salary
-            job_details['Experience'] = job_soup.find('li', class_="job--experience").get_text()
+            job_details['Work_type'] = "Tidak ditampilkan"
+            job_details['Working_type'] = "Tidak ditampilkan"
+            salary_raw = job_soup.find('span', class_='salary').text
+        	job_details['Salary'] = salary_raw.replace('IDR', 'Rp')
+        	
+        	experience_text = job_soup.find('li', class_="job--experience").text
+        	job_details['Experience'] = "Tanpa pengalaman" if experience_text == "Setidaknya 0 tahun" else experience_text
 
             footer_elements = job_soup.find_all('footer', class_="b-stat__footer")
 
             job_details['Skills'] = footer_elements[0].text.strip()
-            job_details['Study Requirement'] = footer_elements[4].text.strip()
+            job_details['Study_Requirement'] = footer_elements[4].text.strip()
 
             # Check if the element is found before calling get_text()
             description_card = job_soup.find_all('div', class_="b-matte")
