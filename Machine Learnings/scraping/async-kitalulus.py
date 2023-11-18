@@ -3,17 +3,18 @@ import aiohttp
 import csv
 import nest_asyncio
 import requests
+import time
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
 nest_asyncio.apply()
 
-# inisialisasi berapa kali scroll & waktu tunggu utk webpage loading data
+# initialize the number of scroll times & waiting time for the webpage to load data
 scroll_total = 10
 wait_time = 0.3
 
-# Inisialisasi browser
+# Browser initialization
 driver = webdriver.Chrome()
 
 url = 'https://kerja.kitalulus.com/id/lowongan?job_functions=&sort_by=isHighlighted'
@@ -50,18 +51,19 @@ async def scrape_page(job_data, soup, headers):
 
             job_location = front_detail[0].text.strip()
             study_req = front_detail[1].text.strip()
-            salary = front_detail[2].text.strip() if len(front_detail) > 2 else ''
+            salary = front_detail[2].text.strip() if len(front_detail) > 2 else "Tidak ditampilkan"
 
-            # mulai dr sini masuk ke link satu persatu
+            # From here, proceed to visit the links one by one
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
             
-            job_id_counter += 1
             job_details['id'] = f"kt{job_id_counter}"  # Assign the generated job ID
+            job_id_counter += 1
             
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
+            job_details['Category'] = "Tidak ditampilkan"
             job_details['Location'] = job_location
             
             workt_type_card = job_soup.find('div', class_="VacancyTitleAndInfoStyled__BoxInfo-sc-1rqk80v-6 iKmXIN")
@@ -69,18 +71,17 @@ async def scrape_page(job_data, soup, headers):
             work_type_string = workt_type_div[1].get_text()
             split_strings = work_type_string.split(" • ")
             job_details['Work_type'] = split_strings[0]
-            job_details['Working_type'] = split_strings[1]           
+            job_details['Working_type'] = split_strings[1]      
+            job_details['Salary'] = salary
             
             exp_card = job_soup.find_all('div', class_="VacancyRequirementStyled__Items-sc-1xx03pf-1 vqqtD")
             exp_div = exp_card[3].find_all('p', class_="TextStyled__Text-sc-18vo2dc-0 ceCju")
             job_details['Experience'] = exp_div[1].get_text()
-            
-            job_details['Salary'] = salary
 
             skills_box = job_soup.find_all('span', class_="TagStyled__TagContainer-j4aip1-0 dPleZn")
 
             job_details['Skills'] = ', '.join([box.text.strip() for box in skills_box if box is not None])
-            job_details['Study Requirement'] = study_req
+            job_details['Study_requirement'] = study_req.replace('Minimal ', '')
             
             # Check if the element is found before calling get_text()
             description_div = job_soup.find('div', class_="VacancyDescriptionStyled__FormattedDescriptionWrapper-sc-13uwtyz-5 iGbbFQ")
@@ -102,13 +103,13 @@ async def main():
   await scrape_page(job_data, soup, headers)
 
   if job_data:
-      with open('async_kitalulus.csv', 'w', newline='', encoding='utf-8') as csvfile:
+      with open('kitalulus-data.csv', 'w', newline='', encoding='utf-8') as csvfile:
           fieldnames = job_data[0].keys()
           writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
           writer.writeheader()
           for job in job_data:
               writer.writerow(job)
-      print("Data has been scraped and saved to async_kitalulus.csv")
+      print("Data has been scraped and saved to kitalulus-data.csv")
   else:
       print("No job data found to save.")
 
