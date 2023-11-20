@@ -18,7 +18,6 @@ async def fetch_data(session, url, headers):
         return await response.text()
 
 async def scrape_page(url, headers, job_data, page_number):
-    global job_id_counter
     async with aiohttp.ClientSession() as session:
         global job_id_counter
         response_text = await fetch_data(session, url, headers)
@@ -39,14 +38,18 @@ async def scrape_page(url, headers, job_data, page_number):
             imgLink = card.find('img').get('src')
             detail_card = card.find_all('div', class_='TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk')
 
-            match = pattern_imgLink.search(imgLink)            
+            match = pattern_imgLink.search(imgLink)
             if match:
                 imgLink = match.group(2)
 
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
-            
+
+            exp = "Tidak ditampilkan"
+            work_type = "Tidak ditampilkan"
+            study_req = "Tidak ditampilkan"
+
             for element in detail_card:
                 text = element.text
                 if any(keyword in text.lower() for keyword in ["setahun", "tahun"]):  # Assuming this text is for "experience"
@@ -55,21 +58,16 @@ async def scrape_page(url, headers, job_data, page_number):
                     work_type = text
                 elif any(keyword in text.lower() for keyword in ["sma/smk",'diploma','sarjana','magister','sd', 'smp', '(s3)']):
                     study_req = text.replace('Minimal ', '')
-            
-            # Check if job ID already exists before adding to job_data
-            job_id = f"gl{job_id_counter}" # Assign the generated job ID
-            if job_id not in job_id_set:
-                job_details['id'] = job_id
-                job_data.append(job_details)
-                job_id_set.add(job_id)
+
+            job_details['id'] = f"gl{job_id_counter}" # Assign the generated job ID
             job_id_counter += 1
 
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
 
-            job_details['Category'] = detail_card[3].text if detail_card[3].text else "Tidak ditampilkan"
+            job_details['Category'] = detail_card[3].text if len(detail_card) > 2 else "Tidak ditampilkan"
             job_details['Location'] = job_location
-            job_details['Work_type'] = work_type if work_type else "Tidak ditampilkan"
+            job_details['Work_type'] = work_type 
             job_details['Working_type'] = "Tidak ditampilkan"
             job_details['Salary'] = salary_info
             job_details['Experience'] = exp if exp else "Tidak ditampilkan"
@@ -84,7 +82,7 @@ async def scrape_page(url, headers, job_data, page_number):
                 skills_text = "Tidak ditampilkan"
 
             job_details['Skills'] = skills_text
-            job_details['Study_requirement'] = study_req if study_req else "Tidak ditampilkan"
+            job_details['Study_requirement'] = study_req
 
             job_desc_div = job_soup.find('ul', class_="public-DraftStyleDefault-ul")
             if job_desc_div:
@@ -98,44 +96,30 @@ async def scrape_page(url, headers, job_data, page_number):
             job_data.append(job_details)
 
 async def main():
-    base_url = "https://glints.com/id/lowongan-kerja"#"https://glints.com/id/opportunities/jobs/explore?country=ID&locationName=All+Cities%2FProvinces&sortBy=LATEST"
+    base_url = "https://glints.com/id/opportunities/jobs/explore?country=ID&locationName=All+Cities%2FProvinces&sortBy=LATEST"
     page_number = 1
     job_data = []
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
         "Referer": "https://glints.com/",
     }
-    while page_number < 20:
-        url = f"{base_url}?page={page_number}"
+
+    while page_number < 15:
+        url = f"{base_url}&page={page_number}"
         await scrape_page(url, headers, job_data, page_number)
         page_number += 1
 
     if job_data:
-        existing_job_ids = set()  # Create a set to store existing job IDs
-    
-    # Check existing job IDs in the CSV file
-        with open('glints-data.csv', 'r', newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                existing_job_ids.add(row['id'])
-    
-    # Save only new job data to the CSV file
-        with open('glints-data.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        with open('glints-data.csv', 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = job_data[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        
-        # Write header only if the file is empty
-            if csvfile.tell() == 0:
-                writer.writeheader()
-        
+            writer.writeheader()
             for job in job_data:
-                if job['id'] not in existing_job_ids:
-                    writer.writerow(job)
+                writer.writerow(job)
         print("Data has been scraped and saved to glints-data.csv")
     else:
         print("No job data found to save.")
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    job_id_set = set()
     loop.run_until_complete(main())
