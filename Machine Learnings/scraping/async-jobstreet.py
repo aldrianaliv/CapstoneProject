@@ -11,8 +11,9 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
     "Referer": "https://www.jobstreet.co.id/",
 }
-
+job_id_counter = 0
 async def fetch_job_data(url, session):
+    global job_id_counter
     async with session.get(url, headers=headers) as response:
         html = await response.text()
         soup = BeautifulSoup(html, 'lxml')
@@ -24,6 +25,13 @@ async def fetch_job_data(url, session):
                 job_html = await job_response.text()
                 job_soup = BeautifulSoup(job_html, 'html.parser')
                 job_details = {}
+                # Check if job ID already exists before adding to job_data
+                job_id = f"gl{job_id_counter}" # Assign the generated job ID
+                if job_id not in job_id_set:
+                    job_details['id'] = job_id
+                    job_data.append(job_details)
+                    job_id_set.add(job_id)
+                job_id_counter += 1
                 
                 
                 # Job Title    
@@ -36,7 +44,6 @@ async def fetch_job_data(url, session):
                 company_name = company_name_element.text if company_name_element else ""
                 job_details['Company'] = company_name
 
-                
                 # Extract Working Type
                 job_details['Working_type'] = "Tidak ditampilkan"
 
@@ -71,9 +78,18 @@ async def fetch_job_data(url, session):
                         scraped_text += text + ', '  # Append text with a newline
                 job_details['Descriptions'] = scraped_text
                 
+                
                 # Extract Link
                 job_details['Link'] = job_link
-                job_data.append(job_details)
+
+                # Company Image
+                img_tag = job_soup.find('img')
+                if img_tag:
+                    src_value = img_tag.get('src')
+                    job_details['Link_img'] = src_value
+                else:
+                    job_details['Link_img'] = ' '
+
 
 async def main():
     page_number = 1
@@ -86,7 +102,9 @@ async def main():
         await asyncio.gather(*tasks)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    job_id_set = set()
+    loop.run_until_complete(main())
 
     if job_data:
         with open('jobstreet-data.csv', 'w', newline='', encoding='utf-8') as csvfile:
