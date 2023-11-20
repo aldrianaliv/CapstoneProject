@@ -47,10 +47,12 @@ async def scrape_page(url, headers, job_data, page_number):
             job_details['Work_type'] = "Tidak ditampilkan"
             job_details['Working_type'] = "Tidak ditampilkan"
             salary_raw = job_soup.find('span', class_='salary').text
-        	job_details['Salary'] = job_details['Salary'] = "Tidak ditampilkan" if salary_raw == "Gaji Kompetitif" else salary_raw.replace('IDR', 'Rp')
         	
-        	experience_text = job_soup.find('li', class_="job--experience").text
-        	job_details['Experience'] = "Tanpa pengalaman" if experience_text == "Setidaknya 0 tahun" else experience_text.replace("Setidaknya", "Minimal")
+            job_details['Salary'] = job_details['Salary'] = "Tidak ditampilkan" if salary_raw == "Gaji Kompetitif" else salary_raw.replace('IDR', 'Rp')
+        	
+            experience_text = job_soup.find('li', class_="job--experience").text
+        	
+            job_details['Experience'] = "Tanpa pengalaman" if experience_text == "Setidaknya 0 tahun" else experience_text.replace("Setidaknya", "Minimal")
 
             footer_elements = job_soup.find_all('footer', class_="b-stat__footer")
 
