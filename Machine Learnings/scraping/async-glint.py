@@ -11,6 +11,7 @@ async def fetch_data(session, url, headers):
         return await response.text()
 
 async def scrape_page(url, headers, job_data, page_number):
+    global job_id_counter
     async with aiohttp.ClientSession() as session:
         response_text = await fetch_data(session, url, headers)
         soup = BeautifulSoup(response_text, 'lxml')
@@ -31,6 +32,9 @@ async def scrape_page(url, headers, job_data, page_number):
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
+
+            job_details['ID'] = f"gl{job_id_counter}"
+            job_id_counter +=1
             
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
@@ -54,6 +58,7 @@ async def scrape_page(url, headers, job_data, page_number):
                 skills_text = "Tidak ditampilkan"
 
             job_details['Skills'] = skills_text
+            job_details['Study Requirement'] = detail_card[2].text
 
             job_desc_div = job_soup.find('ul', class_="public-DraftStyleDefault-ul")
             if job_desc_div:
