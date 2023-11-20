@@ -49,8 +49,8 @@ async def fetch_job_data(url, session):
 
                 # Extract salary information
                 salary_elements = job_soup.find_all('span', class_='_1wkzzau0 a1msqi4y a1msqir')
-                salaries = [element.get_text(separator=' ').strip() for element in salary_elements if 'IDR' in element.get_text()]
-                job_details['Salary'] = salaries[0] if salaries else ""
+                salaries = [element.get_text(separator=' ').strip() for element in salary_elements if 'Rp' in element.get_text()]
+                job_details['Salary'] = salaries[0] if salaries else "Tidak ditampilkan"
                 
                 # Extract Experience
                 job_details['Experience'] = "Tidak ditampilkan"
@@ -83,12 +83,8 @@ async def fetch_job_data(url, session):
                 job_details['Link'] = job_link
 
                 # Company Image
-                img_tag = job_soup.find('img')
-                if img_tag:
-                    src_value = img_tag.get('src')
-                    job_details['Link_img'] = src_value
-                else:
-                    job_details['Link_img'] = ' '
+                img_tag = job_soup.find('img', class_='_14i2qkq0')
+                job_details['Link_img'] = img_tag
 
 
 async def main():
