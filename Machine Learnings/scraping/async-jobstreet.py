@@ -26,7 +26,7 @@ async def fetch_job_data(url, session):
                 job_soup = BeautifulSoup(job_html, 'html.parser')
                 job_details = {}
                 # Check if job ID already exists before adding to job_data
-                job_id = f"gl{job_id_counter}" # Assign the generated job ID
+                job_id = f"jt{job_id_counter}" # Assign the generated job ID
                 if job_id not in job_id_set:
                     job_details['id'] = job_id
                     job_data.append(job_details)
