@@ -3,6 +3,13 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import csv
+import re
+
+# Use regular expression to extract the image ID
+pattern_imgLink = re.compile(r'(.*company-logo.)(.*)')
+
+import nest_asyncio
+nest_asyncio.apply()
 
 # Global variable to maintain the job ID counter
 job_id_counter = 0
@@ -28,37 +35,50 @@ async def scrape_page(url, headers, job_data, page_number):
             job_location = card.find('div', class_="CompactOpportunityCardsc__OpportunityInfo-sc-dkg8my-16 krJQkc").text.strip()
             salary_info_element = card.find('span', class_='CompactOpportunityCardsc__SalaryWrapper-sc-dkg8my-29 gfPeyg')
             salary_info = salary_info_element.text if salary_info_element else "Tidak ditampilkan"
+            imgLink = card.find('img').get('src')
+            detail_card = card.find_all('div', class_='TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk')
+
+            match = pattern_imgLink.search(imgLink)            
+            if match:
+                imgLink = match.group(2)
 
             job_response_text = await fetch_data(session, job_link, headers)
             job_soup = BeautifulSoup(job_response_text, 'lxml')
             job_details = {}
-            
+
+            for element in detail_card:
+                text = element.text
+                if any(keyword in text.lower() for keyword in ["setahun", "tahun"]):  # Assuming this text is for "experience"
+                    exp = text
+                elif any(keyword in text.lower() for keyword in ["harian",'magang','penuh waktu','paruh waktu','kontrak']):
+                    work_type = text
+                elif any(keyword in text.lower() for keyword in ["sma/smk",'diploma','sarjana','magister','sd', 'smp', '(s3)']):
+                    study_req = text.replace('Minimal ', '')
+
             job_details['id'] = f"gl{job_id_counter}" # Assign the generated job ID
             job_id_counter += 1
-            
+
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
 
-            detail_card = card.find_all('div', class_='TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk')
-            job_details['Category'] = detail_card[3].text
+            job_details['Category'] = detail_card[3].text if detail_card[3].text else "Tidak ditampilkan"
             job_details['Location'] = job_location
-            job_details['Work_type'] = detail_card[0].text
+            job_details['Work_type'] = work_type if work_type else "Tidak ditampilkan"
             job_details['Working_type'] = "Tidak ditampilkan"
             job_details['Salary'] = salary_info
-            job_details['Experience'] = detail_card[1].text
-            
-            skills_div = job_soup.find('div', class_='Skillssc__TagContainer-sc-1h7ic4i-5 jqLfdz')
-            skills = []
+            job_details['Experience'] = exp if exp else "Tidak ditampilkan"
 
-            if skills_div:
-                skill_tags = skills_div.find_all('div', class_='TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk')
-                skills = [skill.text.strip() for skill in skill_tags]
-                skills_text = ', '.join(skills)
+            skills_box = job_soup.find_all('div', class_="TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk")
+            skills_box2 = job_soup.find_all('label', class_="TagStyle__TagContent-sc-66xi2f-0 iFeugN tag-content")
+            if skills_box:
+                skills_text = ', '.join([box.text for box in skills_box if box is not None])
+            elif skills_box2:
+                skills_text = ', '.join([box.text for box in skills_box2 if box is not None])
             else:
                 skills_text = "Tidak ditampilkan"
 
             job_details['Skills'] = skills_text
-            job_details['Study_requirement'] = detail_card[2].text.replace('Minimal ', '')
+            job_details['Study_requirement'] = study_req if study_req else "Tidak ditampilkan"
 
             job_desc_div = job_soup.find('ul', class_="public-DraftStyleDefault-ul")
             if job_desc_div:
@@ -67,6 +87,7 @@ async def scrape_page(url, headers, job_data, page_number):
                 job_details['Desc'] = ''
 
             job_details['Link'] = job_link
+            job_details['Link_img'] = "https://images.glints.com/unsafe/glints-dashboard.s3.amazonaws.com/company-logo/" + imgLink
 
             job_data.append(job_details)
 
@@ -78,8 +99,8 @@ async def main():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
         "Referer": "https://glints.com/",
     }
-    
-    while page_number < 2:
+
+    while page_number < 50:
         url = f"{base_url}&page={page_number}"
         await scrape_page(url, headers, job_data, page_number)
         page_number += 1
