@@ -91,7 +91,7 @@ async def scrape_page(url, headers, job_data, page_number):
                 job_details['Desc'] = ''
 
             job_details['Link'] = job_link
-            job_details['Link_img'] = "https://images.glints.com/unsafe/glints-dashboard.s3.amazonaws.com/company-logo/" + imgLink
+            job_details['Link_img'] = "https://images.glints.com/unsafe/glints-dashboard.s3.amazonaws.com/company-logo/" + imgLink + ';'
 
             job_data.append(job_details)
 

@@ -92,6 +92,8 @@ async def scrape_page(job_data, soup, headers):
 
             job_details['Link'] = job_link
 
+            job_details['Link_img'] = 'Tidak ditampilkan' + ';'
+
             job_data.append(job_details)
 
 async def main():

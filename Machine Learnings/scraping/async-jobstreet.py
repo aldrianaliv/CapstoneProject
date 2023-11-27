@@ -84,7 +84,7 @@ async def fetch_job_data(url, session):
 
                 # Company Image
                 img_tag = job_soup.select_one('div._1wkzzau0 img._14i2qkq0')
-                job_details['Link_img'] = img_tag if img_tag else ""
+                job_details['Link_img'] = img_tag + ';' if img_tag else "" + ';'
 
 
 
