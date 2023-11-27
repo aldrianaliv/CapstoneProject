@@ -104,7 +104,7 @@ async def main():
         "Referer": "https://glints.com/",
     }
 
-    while page_number < 15:
+    while page_number < 10:
         url = f"{base_url}&page={page_number}"
         await scrape_page(url, headers, job_data, page_number)
         page_number += 1
