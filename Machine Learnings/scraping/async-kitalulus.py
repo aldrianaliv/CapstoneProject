@@ -43,6 +43,7 @@ async def scrape_page(job_data, soup, headers):
 
         for card in job_cards:
             job_link = "https://kerja.kitalulus.com" + card.find('a').get("href")
+            
 
             company_name = card.find('p', class_='TextStyled__Text-sc-18vo2dc-0 ceCju').text.strip()
             job_title = card.find('p', class_='TextStyled__Text-sc-18vo2dc-0 ldPCOk').text.strip()
@@ -91,8 +92,12 @@ async def scrape_page(job_data, soup, headers):
                 job_details['Desc'] = ''
 
             job_details['Link'] = job_link
-
-            job_details['Link_img'] = 'Tidak ditampilkan' + ';'
+            image_link = card.find('img', id='img-company')
+            if image_link:
+                image_src = image_link.get("src")
+                job_details['Link_img'] = image_src + ";"
+            else:
+                job_details['Link_img'] = "Tidak ditampilkan" + ";"
 
             job_data.append(job_details)
 
