@@ -33,6 +33,7 @@ async def scrape_kalibrr_jobs():
         await asyncio.sleep(5)  # Wait for the page to load completely (you can adjust the sleep duration)
 
     async def scrape_page(page_number):
+        id_counter = 1
         url = f"{base_url}?page={page_number}"
         await fetch_data(url)
 
@@ -88,7 +89,8 @@ async def scrape_kalibrr_jobs():
 
             # Get the value of the src attribute
             src_value = img_element['src']
-            
+            job_details['id'] = f"kb{id_counter}" # Assign the generated job ID
+            id_counter += 1
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
             job_details['Category'] = category
