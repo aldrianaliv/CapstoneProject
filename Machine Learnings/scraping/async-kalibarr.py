@@ -3,6 +3,8 @@ import asyncio
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+from bs4 import BeautifulSoup
+import requests
 
 async def scrape_kalibrr_jobs():
     # Set the path to your chromedriver executable
@@ -19,9 +21,12 @@ async def scrape_kalibrr_jobs():
     # URL of the webpage containing job listings
     base_url = "https://www.kalibrr.com/id-ID/home/all-jobs"
     job_data = []
-
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+        "Referer": "https://www.kalibr.com/",
+    }
     # Define the number of pages to scrape (you can adjust this)
-    num_pages_to_scrape = 5
+    num_pages_to_scrape = 1
 
     async def fetch_data(url):
         driver.get(url)
@@ -39,9 +44,11 @@ async def scrape_kalibrr_jobs():
 
         for card in job_cards:
             job_details = {}
-
             job_link_element = card.find_element(By.CLASS_NAME, "k-text-black")
             job_link = job_link_element.get_attribute("href")
+
+            response = requests.get(job_link, headers=headers)
+            soup = BeautifulSoup(response.text, 'lxml')
 
             company_name_element = card.find_element(By.CLASS_NAME, "k-text-subdued.k-font-bold")
             company_name = company_name_element.text.strip()
@@ -58,16 +65,43 @@ async def scrape_kalibrr_jobs():
             work_type_element = card.find_element(By.XPATH, '//*[@id="__next"]/div/main/div[2]/div[1]/div/div[1]/div[2]/div[1]/span[3]/span[1]')
             work_type = work_type_element.text.strip() if work_type_element else "Job Type Not Specified"
 
+            category_element = soup.find('span', itemprop='industry')
+            category = category_element.text.strip() if category_element else "Tidak ditampilkan"
+            
+            rp = soup.find_all('dd', class_='k-inline-flex k-items-center')
+            # Initialize an empty list to store the text content
+            rp_list = []
+
+            # Loop through the <dd> elements and store their text content in rp_list
+            for dd_element in rp:
+                text_content = dd_element.text
+                rp_list.append(text_content)
+
+            # Find the <div> element with itemprop="description"
+            description_div = soup.find('div', itemprop='description')
+
+            # Get the text content of the description_div and its descendants
+            text_value = description_div.get_text(strip=True)
+
+            # Find the <img> element
+            img_element = soup.find('img')
+
+            # Get the value of the src attribute
+            src_value = img_element['src']
             
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
+            job_details['Category'] = category
             job_details['Location'] = location
-            job_details['Salary'] = salary
             job_details['Work Type'] = work_type
+            job_details['Working Type'] = rp_list[0]
+            job_details['Salary'] = salary
+            job_details['Experience'] = "Tidak ditampilkan"
+            job_details['Skill'] = 'Tidak ditampilkan'
+            job_details['Study_requirement'] = rp_list[2]
+            job_details['Desc'] = text_value
             job_details['Link'] = job_link
-
-            # Extract other details as needed
-            # ...
+            job_details['Link_img'] = src_value
 
             job_data.append(job_details)
 
