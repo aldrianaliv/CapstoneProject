@@ -101,7 +101,7 @@ async def scrape_kalibrr_jobs():
             job_details['Study_requirement'] = rp_list[2]
             job_details['Desc'] = text_value
             job_details['Link'] = job_link
-            job_details['Link_img'] = src_value
+            job_details['Link_img'] = src_value + ";"
 
             job_data.append(job_details)
 
