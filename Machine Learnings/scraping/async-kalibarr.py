@@ -57,7 +57,7 @@ async def scrape_kalibrr_jobs():
             job_title_element = card.find_element(By.CLASS_NAME, "k-text-2xl")
             job_title = job_title_element.text.strip()
 
-            location_element = card.find_element(By.XPATH, "//span[contains(text(), 'South Jakarta, Indonesia')]")
+            location_element = card.find_element(By.CSS_SELECTOR, 'span.k-flex.k-gap-4.k-text-gray-300 > span.k-text-gray-500.k-block.k-pointer-events-none')
             location = location_element.text.strip() if location_element else "Location Not Specified"
 
             salary_element = card.find_element(By.XPATH, '//*[@id="__next"]/div/main/div[2]/div[1]/div/div[1]/div[2]/div[1]/span[2]/p')
