@@ -44,6 +44,20 @@ async def fetch_job_data(url, session):
                 company_name = company_name_element.text if company_name_element else ""
                 job_details['Company'] = company_name
 
+                #Category
+                category_element = job_soup.find_all('span', class_='_1wkzzau0 a1msqi4y a1msqir')
+                c_list = []
+                for c in category_element:
+                    text_content = c.text
+                    c_list.append(text_content)
+                job_details['Category'] = c_list[1]
+                
+                #Location
+                job_details['Location'] = c_list[0]
+
+                #Work Type
+                job_details['Work Type'] = c_list[2]
+
                 # Extract Working Type
                 job_details['Working_type'] = "Tidak ditampilkan"
 
@@ -92,7 +106,7 @@ async def main():
     page_number = 1
     async with aiohttp.ClientSession() as session:
         tasks = []
-        while page_number < 10:
+        while page_number < 5:
             url = f"{base_url}?page={page_number}"
             tasks.append(fetch_job_data(url, session))
             page_number += 1
