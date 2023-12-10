@@ -50,13 +50,14 @@ async def fetch_job_data(url, session):
                 for c in category_element:
                     text_content = c.text
                     c_list.append(text_content)
-                job_details['Category'] = c_list[1]
+                
+                job_details['Category'] = c_list[1] if len(c_list) > 1 else "Tidak Ditampilkan"
                 
                 #Location
-                job_details['Location'] = c_list[0]
+                job_details['Location'] = c_list[0] if len(c_list) > 0 else "Tidak Ditampilkan"
 
                 #Work Type
-                job_details['Work Type'] = c_list[2]
+                job_details['Work Type'] = c_list[2] if len(c_list) > 2 else "Tidak Ditampilkan"
 
                 # Extract Working Type
                 job_details['Working_type'] = "Tidak ditampilkan"
@@ -106,7 +107,7 @@ async def main():
     page_number = 1
     async with aiohttp.ClientSession() as session:
         tasks = []
-        while page_number < 5:
+        while page_number < 30:
             url = f"{base_url}?page={page_number}"
             tasks.append(fetch_job_data(url, session))
             page_number += 1

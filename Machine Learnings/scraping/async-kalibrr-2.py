@@ -6,6 +6,9 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from bs4 import BeautifulSoup
 import requests
 
+# Initialize the job_id_counter as a global variable
+id_counter = 1
+
 async def scrape_kalibrr_jobs():
     # Set the path to your chromedriver executable
     chromedriver_path = 'drivers\chromedriver.exe'
@@ -33,7 +36,7 @@ async def scrape_kalibrr_jobs():
         await asyncio.sleep(5)  # Wait for the page to load completely (you can adjust the sleep duration)
 
     async def scrape_page(page_number):
-        id_counter = 1
+        global id_counter  # Use the global id_counter
         url = f"{base_url}?page={page_number}"
         await fetch_data(url)
 

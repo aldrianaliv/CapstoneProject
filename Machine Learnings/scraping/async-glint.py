@@ -36,7 +36,12 @@ async def scrape_page(url, headers, job_data, page_number):
             salary_info_element = card.find('span', class_='CompactOpportunityCardsc__SalaryWrapper-sc-dkg8my-29 gfPeyg')
             salary_info = salary_info_element.text if salary_info_element else "Tidak ditampilkan"
             imgLink = card.find('img').get('src')
+            
             detail_card = card.find_all('div', class_='TagStyle__TagContentWrapper-sc-r1wv7a-1 koGVuk')
+            dc_list = []
+            for dc_element in detail_card:
+                text_content = dc_element.text
+                dc_list.append(text_content)
 
             match = pattern_imgLink.search(imgLink)
             if match:
@@ -64,8 +69,7 @@ async def scrape_page(url, headers, job_data, page_number):
 
             job_details['Job_title'] = job_title
             job_details['Company'] = company_name
-
-            job_details['Category'] = detail_card[3].text if len(detail_card) > 2 else "Tidak ditampilkan"
+            job_details['Category'] = dc_list[3] if len(dc_list) > 3 else "Tidak Ditampilkan"
             job_details['Location'] = job_location
             job_details['Work_type'] = work_type 
             job_details['Working_type'] = "Tidak ditampilkan"
@@ -104,7 +108,7 @@ async def main():
         "Referer": "https://glints.com/",
     }
 
-    while page_number < 10:
+    while page_number < 30:
         url = f"{base_url}&page={page_number}"
         await scrape_page(url, headers, job_data, page_number)
         page_number += 1

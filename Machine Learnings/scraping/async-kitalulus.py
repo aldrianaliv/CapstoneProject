@@ -11,7 +11,7 @@ from selenium import webdriver
 nest_asyncio.apply()
 
 # initialize the number of scroll times & waiting time for the webpage to load data
-scroll_total = 10
+scroll_total = 50
 wait_time = 0.3
 
 # Browser initialization
